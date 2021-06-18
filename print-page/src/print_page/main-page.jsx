@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import renderXlsx from './output';
+import printHtml from './printHtml';
 
 function MainPage() {
-    const [text, setText] = useState('');
+
     let title = '',
         mutleHeadFlag = false,
         header = [],
@@ -13,17 +14,31 @@ function MainPage() {
 
     useEffect(() => {
         chrome.storage.local.get('ncchr-print-plugin-data', function (text) {
-            setText(text['ncchr-print-plugin-data']);
             let htmlStr = text['ncchr-print-plugin-data'];
             analyHtmlStr(htmlStr);
-            renderXlsx({
-                title,
-                mutleHeadFlag,
-                header,
-                body,
-                maker,
-                date
-            })
+            let action = window.location.href.split("=")[1];
+            if (action === 'output') {
+                renderXlsx({
+                    title,
+                    mutleHeadFlag,
+                    header,
+                    body,
+                    maker,
+                    date
+                })
+            } else {
+                chrome.storage.local.get('ncchr-print-plugin-conf', function (confText) {
+                    const printConf = JSON.parse(confText['ncchr-print-plugin-conf'] || '{}');
+                    printHtml({
+                        title,
+                        mutleHeadFlag,
+                        header,
+                        body,
+                        maker,
+                        date
+                    }, printConf)
+                })
+            }
         })
     }, [])
 
@@ -34,7 +49,6 @@ function MainPage() {
         title = el.querySelector('h3').innerText;
         let tables = el.querySelectorAll('table');
         mutleHeadFlag = !!el.querySelector('.print-table-head');
-        console.log(el.querySelector('.print-table-head'));
         tables.forEach(tableItem => {
             if (!mutleHeadFlag) {
                 let trs = tableItem.querySelectorAll('tr');
@@ -47,10 +61,10 @@ function MainPage() {
                     if (index === 0) {
                         header = header.concat(temp)
                     } else {
-                        if (!body[index-1]) {
-                            body[index-1] = []
+                        if (!body[index - 1]) {
+                            body[index - 1] = []
                         }
-                        body[index-1] = body[index-1].concat(temp)
+                        body[index - 1] = body[index - 1].concat(temp)
                     }
                 })
             } else {
@@ -91,7 +105,7 @@ function MainPage() {
     }
 
     return (
-        <div dangerouslySetInnerHTML={{ __html: text }} ></div>
+        <div></div>
     )
 }
 

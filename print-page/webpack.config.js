@@ -2,7 +2,10 @@ const path = require('path');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    entry: './src/index.jsx',
+    entry: {
+        "print_page/index": './src/print_page/index.jsx',
+        "popup/index": './src/popup/index.jsx'
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js'
@@ -36,7 +39,14 @@ module.exports = {
     },
     plugins: [
         new HtmlWebPackPlugin({
-            template: './index.html'
+            template: './index.html',
+            filename: 'print_page/index.html',
+            chunks: ['print_page/index']
+        }),
+        new HtmlWebPackPlugin({
+            template: './index.html',
+            filename: 'popup/index.html',
+            chunks: ['popup/index']
         })
     ],
     devServer: {
